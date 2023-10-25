@@ -2,17 +2,22 @@ import random
 import numpy as np
 import pandas
 
-## Generate a trace of one way delays for `time_range` horizon with constant
-## transmission time for all time.
+
 def constant_delay(latency, time_range):
+	"""
+	Generate a trace of one way delays for `time_range` horizon with constant
+	transmission time for all time.
+	"""
 	answer = []
 	for i in range(time_range):
 		answer.append(latency)
 	return answer
 
-## Generate a trace of one way delays for `time_range` horizon with variale
-## transmission time for all time. This generates a random walk with spikes.
 def variable_delay(min_latency, max_latency, time_range, nonce):
+	"""
+	Generate a trace of one way delays for `time_range` horizon with variale
+	transmission time for all time. This generates a random walk with spikes.
+	"""
 	random.seed(nonce)
 	answer = []
 	answer.append(min_latency)
@@ -34,10 +39,18 @@ def variable_delay(min_latency, max_latency, time_range, nonce):
 		answer.append(current)
 	return answer
 
-## Read the cloud trace from the `trace_filename`. Also calculate the end-to-end
-## latency (e2e), receive latency (receive_e2e: e2e latency minus any buffering
-## delay at the OB), delay at the OB and network RTT.
 def read_cloud_trace(trace_filename="traces/direct.zip"):
+	"""
+	Read the cloud trace from the `trace_filename`. Also calculate the end-to-end
+	latency (e2e), receive latency (receive_e2e: e2e latency minus any buffering
+	delay at the OB), delay at the OB and network RTT.
+
+	Args:
+		trace_filename (str, optional): Name of the trace file. Defaults to "traces/direct.zip".
+
+	Returns:
+		pandas.DataFrame: Cloud trace from the file.
+	"""
 	cloud_trace = pandas.read_csv(trace_filename)
 	cloud_trace['e2e'] = (cloud_trace['execution_time'] - cloud_trace['generation_time'] - cloud_trace['response_time'])
 	cloud_trace['receive_e2e'] = (cloud_trace['ces_recv_time'] - cloud_trace['generation_time'] - cloud_trace['response_time'])
@@ -47,14 +60,35 @@ def read_cloud_trace(trace_filename="traces/direct.zip"):
 	return cloud_trace
 
 def generate_random_trace(trace_, rand_x_, time_range_):
+	"""
+	Using a list of RTTs over time and an index, generate a small snippets of RTTs of
+	length `time_range`.
+
+	Args:
+		trace_ (list(float)): Whole range of RTTs over time for a long period.
+		rand_x_ (int): Index (expected to be randomly generated).
+		time_range_ (int): Length of trace required.
+
+	Returns:
+		list(float): A small snippet of length `time_range` from the whole `trace_`.
+	"""
 	if rand_x_+time_range_<trace_.shape[0]:
 		ret = trace_[rand_x_:rand_x_+time_range_]
 	else:
 		ret = np.concatenate([trace_[rand_x_:], trace_[:time_range_-(trace_.shape[0]-rand_x_)]])
 	return ret
 
-
 def data_generation(cloud_trace):
+	"""
+	Calculate the network RTTs between the CES and the RB using the cloud trace for each time step.
+	The RTT data is interpolated for the missing time steps.
+
+	Args:
+		cloud_trace (pandas.DataFrame): Cloud trace.
+
+	Returns:
+		list(list(float)): For each RB, a list of RTTs over time between RB and CES.
+	"""
 	rtt_arrs = []
 	## Use `np.sort(cloud_trace.mp_id.unique())` for traces from all MPs
 	# for i in np.sort(cloud_trace.mp_id.unique()):

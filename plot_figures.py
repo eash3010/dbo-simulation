@@ -85,5 +85,6 @@ plt.scatter(tail_latency["DBO"][60], [1], label="DBO, 60 MPs", marker='d', s=100
 plt.xlim(left=0)
 plt.legend(prop={'size': 14})
 plt.tight_layout()
+plt.title("Tail latency vs Fairness")
 # plt.savefig("figures/tail_latency_v_fairness.pdf", bbox_inches='tight', dpi=450)
 plt.savefig("figures/tail_latency_v_fairness.png", bbox_inches='tight', dpi=450)

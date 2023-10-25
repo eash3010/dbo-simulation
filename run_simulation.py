@@ -3,9 +3,9 @@ from matplotlib import pyplot as plt
 import matplotlib
 from util import read_cloud_trace, data_generation, generate_random_trace
 from traces.trace_indices import rand_idx1
-from dbo import DBO
-from cloudex import Cloudex
-from max_rtt import MaxRTT
+from algorithms.dbo import DBO
+from algorithms.cloudex import Cloudex
+from algorithms.max_rtt import MaxRTT
 
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
@@ -44,7 +44,7 @@ for i in range(int(time_range/g_step)):
 dbo_obj = DBO(20, 25, 0)
 max_rtt_obj = MaxRTT()
 
-for number_participant in range(70, 100, 10):
+for number_participant in range(10, 100, 10):
 	fw_owd_arr = []
 	rv_owd_arr = []
 	response_time_arr = []
