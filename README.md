@@ -5,11 +5,8 @@
 DBO (Delivery Based Ordering) is a novel mechanism that guarantees fairness by post-hoc offsetting the latency differences among market participants in the cloud. This repository contains the simulation framework for DBO using real cloud traces collected over Azure, which includes:
 
 1. A simulation framework for Financial Exchanges which can be extended to simulate various algorithms and evaluate their performance based on latency and fairness achieved.
-    <!-- - DBO (Delivery Based Ordering)
-    - Cloudex algorithm (more details [here](https://doi.org/10.1145/3458336.3465278))
-    - Direct delivery with no buffering delays. -->
 2. A real 15 min cloud trace on Azure using 10 MPs. The RBs and MPs are implemented as independent processes on same VMs.
-3. Scripts to reproduce the simulation results from our [paper](https://dl.acm.org/doi/10.1145/3603269.3604871).
+3. Scripts to reproduce the simulation results from our paper, **DBO: Fairness for Cloud-Hosted Financial Exchanges**, published at *SIGCOMM'23*. Please see our paper for more details about the architecture and schemes: [https://dl.acm.org/doi/10.1145/3603269.3604871](https://dl.acm.org/doi/10.1145/3603269.3604871)
 
 ## Organization
 
@@ -76,22 +73,19 @@ The columns in the dataframe are as follows:
 | **Column name** | **Defination** |
 |-----------------|----------------|
 | data_id | ID of data point to which this trade was a response. |
-| generation_time | Timestamp at generation of data point at the CES in &mu s. |
+| generation_time | Timestamp at generation of data point at the CES in &mu;s. |
 | mp_id | The MP ID which sent the trade. |
 | response_time | Time taken by MP to respond. |
 | pacing_delay | Time taken by RB before it is sent to MP. |
-<!-- | ces_buffer_size | Number of trades in buffer at the OB waiting to be forwarded to the CES and executed | -->
-| execution_time | Timestamp of trade execution at the CES in &mu s. |
-| ces_recv_time | Timestamp when OB receives the trade from the MP in &mu s. |
-<!-- | dbo_id | Delivery clock timestamp (not used in these simulations) |
-| dbo_t | Delivery clock timestamp (not used in these simulations) |
-| batch_number | The batch number of the data point | -->
+| execution_time | Timestamp of trade execution at the CES in &mu;s. |
+| ces_recv_time | Timestamp when OB receives the trade from the MP in &mu;s. |
 
-All times are measured in &mu s.
+
+All times are measured in &mu;s.
 
 ## Testing custom algorithms
 
-Various algorithms for a financial exchange which follow the same architecture as Figure 1 (from the paper) can be implemented by extending the delivery algorithm at the RB and the ordering algorithm at the OB. See how `DBO` is extended to understand more.
+Various algorithms for a financial exchange that follow the same architecture as Figure 1 (from the paper) can be implemented by defining the delivery algorithm at the RB and the ordering algorithm at the OB. See how `DBO` is implemented in `algorithms/dbo.py` to extend the `Algorithm` class for more details.
 
 ## Authors
 
@@ -100,7 +94,7 @@ Various algorithms for a financial exchange which follow the same architecture a
 
 ## Citation
 
-The link to our paper is [https://dl.acm.org/doi/10.1145/3603269.3604871](https://dl.acm.org/doi/10.1145/3603269.3604871). Please cite our paper if you find our code useful.
+Please cite our paper if you find our code useful.
 
 ```
 @inproceedings{10.1145/3603269.3604871,
