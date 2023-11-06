@@ -1,3 +1,0 @@
-Generating RTTs from trace of MP: 1
-Running DBO for 10 MPs
-Running MaxRTT for 10 MPs

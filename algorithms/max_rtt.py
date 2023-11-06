@@ -3,8 +3,8 @@ from .dbo import DBO
 class MaxRTT(DBO):
 	"""
 	MaxRTT calculates the bounds on end-to-end latency to achieve Response Time Fairness.
-	To minimize delay, there is no buffering at the RBs. MaxRTT assumes knowledge or trigger
-	points and that heartbeats at each time step are being sent from all RBs to the CES.
+	To minimize delay, there is no buffering at the RBs. MaxRTT assumes knowledge of trigger
+	points of the trades.
 	"""
 	def __init__(self):
 		super().__init__()
@@ -21,8 +21,8 @@ class MaxRTT(DBO):
 
 		For MaxRTT, the trade is ordered based on the response time, which can be calculated using the
 		delivery time (`d_time`) and the submission time (`submission_time`). The ordering here for a
-		trade in response to the data point `x` is defined as (x*time_range + t). This enforces the
-		lexicographic sorting for the tuple (x,t).
+		trade in response to the data point `x` with response time `rt` is defined as (x*time_range + rt).
+		This enforces the lexicographic sorting for the tuple (x, rt).
 
 		Overriding the method from the super class (Algorithm).
 
@@ -36,10 +36,11 @@ class MaxRTT(DBO):
 		"""
 		answer = []
 		for x in range(len(submission_time)):
-			answer.append(x * time_range + submission_time[x]-d_time[x])
+			rt = submission_time[x]-d_time[x]
+			answer.append(x * time_range + rt)
 		return answer
 
-	def get_execution_time(self, ordering, d_time_arr, time_range, rv_owd):
+	def get_execution_time(self, ordering, d_time_arr, time_range, ack_time_arr):
 		"""
 		Get the execution time of trades from a single MP.
 
@@ -53,8 +54,9 @@ class MaxRTT(DBO):
 
 		Args:
 			ordering (list(float)): A total ordering of trades.
-			ack_time_arr (list(float)): Real times when acks are received from all MPs.
+			d_time_arr (list(list(float))): Real times when RB sends data points to all MPs.
 			time_range (float): The time horizon being simulated.
+			ack_time_arr (list(list(float))): Real times when acks are received from all MPs.
 
 		Returns:
 			list(float): Real times of execution of trades from a single MP at the CES.
@@ -65,7 +67,10 @@ class MaxRTT(DBO):
 			rt = ordering[i]-i*time_range
 			max_s  = -1
 			for j in range(len(d_time_arr)):
-				max_s = max(max_s, d_time_arr[j][x]+rt+rv_owd[int(d_time_arr[j][x]+rt)])
+				d_time_ind = x
+				while d_time_arr[j][d_time_ind] < d_time_arr[j][x]+rt and d_time_ind < len(d_time_arr[j]) - 1:
+					d_time_ind += 1
+				max_s = max(max_s, ack_time_arr[j][d_time_ind])
 			answer.append(max_s)
 		return answer
 
@@ -88,7 +93,7 @@ class MaxRTT(DBO):
 
 		for i in range(self.number_participants):
 			# Calculate the execution time of trades from RB`i` at the CES
-			self.execution_time_arr.append(self.get_execution_time(self.ordering_arr[i], self.d_time_arr, self.time_range, self.rv_owd_arr[i]))
+			self.execution_time_arr.append(self.get_execution_time(self.ordering_arr[i], self.d_time_arr, self.time_range, self.ack_time_arr))
 			# Calculate the latency for each trade (ignore last 25/g_step points to ensure it is within `time_range`)
 			self.latency_arr.append(self.get_e2e_latency(
 				self.g_time, self.execution_time_arr[i], self.response_times[i])[:(-int((25.0/self.g_step) + 1))])

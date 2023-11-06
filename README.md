@@ -39,7 +39,7 @@ python3 run_simulation.py
 This will generate the `traces/simulation.dat` file which is of the format:
 
 ```
-<algorithm title and parameters>,<number of participants>,<fairness ratio>,<mean latency>,<99p latency>,<maximum latency>
+<algorithm title and parameters>,<number of participants>,<fairness ratio>,<LRTF fairness ratio>,<mean latency>,<99p latency>,<maximum latency>
 ```
 
 Example:
@@ -52,6 +52,18 @@ Cloudex(15|15),10,0.9951819555555554,30.181985499269878,31.61907858124118,400.40
 Cloudex(20|20),10,0.9988185999999999,40.12518497419023,40.0,400.4027382090717
 ...
 ```
+
+### Metrics
+
+The main metrics evaluated by us are as follows (described in more detail in the paper, Section 6):
+
+#### Fariness Ratio
+
+We define two different definitions of fairness in our paper, response time fairness and limited response time fairness. Both of these are evaluated and reported by us in the simulation framework. The figures plotted in the next [subsection](#plotting-figures-from-the-paper) show the stronger and general definition: response time fairness. Note that to evaluate the high frequency trading workloads, we evaluate on MPs with response times faster than 20&mu;s. Accordingly, the choice of delta for DBO and LRTF is also 20&mu;s.
+
+#### Latency
+
+The latency of the system is evaluated from point of data generation to the trade execution. To only get the system latency, we deduct the response time taken by the MP to submit a trade after receiving a data point. We call this end-to-end latency (see Section 6.1).
 
 ### Plotting figures from the paper
 
@@ -87,10 +99,13 @@ All times are measured in &mu;s.
 
 Various algorithms for a financial exchange that follow the same architecture as Figure 1 (from the paper) can be implemented by defining the delivery algorithm at the RB and the ordering algorithm at the OB. See how `DBO` is implemented in `algorithms/dbo.py` to extend the `Algorithm` class for more details.
 
+The `Algorithm` class defined in `algorithms/algorithm.py` can also be extended to implement the other schemes described in our earlier workshop paper, **Rethinking cloud-hosted financial exchanges for response time fairness**, published at *HotNets'22*: [https://dl.acm.org/doi/10.1145/3563766.3564098](https://dl.acm.org/doi/10.1145/3563766.3564098).
+
 ## Authors
 
 - Prateesh Goyal
 - Eashan Gupta
+- Ilias Marinos
 
 ## Citation
 

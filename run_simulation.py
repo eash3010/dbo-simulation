@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from matplotlib import pyplot as plt
 import matplotlib
 from util import read_cloud_trace, data_generation, generate_random_trace
@@ -33,16 +34,29 @@ plt.show()
 fig.savefig("figures/network_rtt_trace.png", bbox_inches='tight', dpi=450)
 
 
-RT = 10
+RT = 4
+DELTA = 20
+BATCH_SIZE = 25
 g_step = 1
 time_range = 1000000
 g_time = []
 for i in range(int(time_range/g_step)):
 	g_time.append(i*g_step)
 
-
-dbo_obj = DBO(20, 25, 0)
+dbo_obj = DBO(DELTA, BATCH_SIZE, 0)
 max_rtt_obj = MaxRTT()
+
+def print_stats(sim_obj, output_file_hndlr=sys.stdout, delta=DELTA):
+	print("{algorithm},{num_p},{win_ratio},{lrtf_ratio},{mean_l},{p99_l},{max_l}".format(
+		algorithm=sim_obj.get_title(),
+		num_p=number_participant,
+		win_ratio=sim_obj.get_win_fraction(),
+		lrtf_ratio=sim_obj.get_lrtf_fariness_ratio(delta),
+		mean_l=sim_obj.get_mean_latency(),
+		p99_l=sim_obj.get_99p_latency(),
+		max_l=sim_obj.get_max_latency()),
+		flush=True, file=output_file_hndlr)
+
 
 for number_participant in range(10, 100, 10):
 	fw_owd_arr = []
@@ -57,14 +71,14 @@ for number_participant in range(10, 100, 10):
 	print("Running DBO for %d MPs" % number_participant)
 	dbo_obj.set_simulation_environment(g_time, time_range, number_participant, fw_owd_arr, rv_owd_arr, response_time_arr, g_step)
 	dbo_obj.run_simulation()
-	print("{algorithm},{num_p},{win_ratio},{mean_l},{p99_l},{max_l}".format(
-		algorithm=dbo_obj.get_title(), num_p=number_participant, win_ratio=dbo_obj.get_win_fraction(), mean_l=dbo_obj.get_mean_latency(), p99_l=dbo_obj.get_99p_latency(), max_l=dbo_obj.get_max_latency()), file=output_file)
+	print_stats(dbo_obj)
+	print_stats(dbo_obj, output_file)
 
 	print("Running MaxRTT for %d MPs" % number_participant)
 	max_rtt_obj.set_simulation_environment(g_time, time_range, number_participant, fw_owd_arr, rv_owd_arr, response_time_arr, g_step)
 	max_rtt_obj.run_simulation()
-	print("{algorithm},{num_p},{win_ratio},{mean_l},{p99_l},{max_l}".format(
-		algorithm=max_rtt_obj.get_title(), num_p=number_participant, win_ratio=max_rtt_obj.get_win_fraction(), mean_l=max_rtt_obj.get_mean_latency(), p99_l=max_rtt_obj.get_99p_latency(), max_l=max_rtt_obj.get_max_latency()), file=output_file)
+	print_stats(max_rtt_obj)
+	print_stats(max_rtt_obj, output_file)
 
 for number_participant in [10, 60]:
 	fw_owd_arr = []
@@ -81,5 +95,5 @@ for number_participant in [10, 60]:
 		cloudex_obj = Cloudex(dd, dd)
 		cloudex_obj.set_simulation_environment(g_time, time_range, number_participant, fw_owd_arr, rv_owd_arr, response_time_arr, g_step)
 		cloudex_obj.run_simulation()
-		print("{algorithm},{num_p},{win_ratio},{mean_l},{p99_l},{max_l}".format(
-			algorithm=cloudex_obj.get_title(), num_p=number_participant, win_ratio=cloudex_obj.get_win_fraction(), mean_l=cloudex_obj.get_mean_latency(), p99_l=cloudex_obj.get_99p_latency(), max_l=cloudex_obj.get_max_latency()), file=output_file)
+		print_stats(cloudex_obj)
+		print_stats(cloudex_obj, output_file)

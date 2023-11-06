@@ -25,8 +25,10 @@ class DBO(Algorithm):
 		bounded delay here as shown in Theorem 4.
 
 		For DBO, the data points received at the RB are buffered and batched based on `batch_size`.
-		The batches are delivered with inter-batch time as >=`delta`. See LRTF and Section 5 in the
-		paper.
+		The complete batches are delivered with inter-batch time as >=`delta`. See LRTF and Section 5
+		in the paper. Note that we assume that the CES knows the batch size and the last data point
+		of the batch. This information is also included when data points are sent to the RB. RB marks
+		a batch as complete when the last data point of the batch is received at the RB.
 
 		Overriding the method from the super class (Algorithm).
 

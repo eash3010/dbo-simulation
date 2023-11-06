@@ -215,7 +215,7 @@ class Algorithm():
 		"""
 		Calculate the fairness ratio as ratio of the number of competing trade pairs that were
 		ordered correctly (based on Response time Fairness) to the total number of competing trade
-		sets for all unique pairs of market participants.
+		sets for all unique pairs of market participants. See Definition 1 in the paper.
 
 		Returns:
 			float: Win fraction (fairness) between all participants for all trades.
@@ -232,6 +232,35 @@ class Algorithm():
 				else:
 					win_fraction += self.win_prob_2_before_1(self.ordering_arr[j], self.ordering_arr[i])
 		return win_fraction/total
+
+	def get_lrtf_fariness_ratio(self, delta):
+		"""
+		Calculate the fairness ratio as ratio of the number of competing trade pairs that were
+		ordered correctly (based on Limited Response time Fairness) to the total number of competing trade
+		sets for all unique pairs of market participants. See Definition 2 in the paper.
+
+		Args:
+			delta (float): The delta parameter for LRTF.
+
+		Returns:
+			float: Win fraction (fairness) between all participants for all trades.
+		"""
+		win_fraction = 0
+		total = 0
+		for i in range(self.number_participants):
+			for j in range(self.number_participants):
+				if i>=j:
+					continue
+				## For LRTF, the smaller response time should be less than delta to ensure LRTF fairness.
+				if min(self.response_times[i], self.response_times[j]) >= delta:
+					continue
+				total += 1.0
+				if self.response_times[i] > self.response_times[j]:
+					win_fraction += self.win_prob_2_before_1(self.ordering_arr[i], self.ordering_arr[j])
+				else:
+					win_fraction += self.win_prob_2_before_1(self.ordering_arr[j], self.ordering_arr[i])
+		return win_fraction/total
+
 
 	def get_mean_latency(self):
 		"""
