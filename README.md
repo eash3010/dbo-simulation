@@ -18,7 +18,8 @@ The repository is organized as follows:
     - `cloudex.py` extends the base class to implement the Cloudex algorithm (see more details [here](https://doi.org/10.1145/3458336.3465278)).
     - `direct.py` extends the base class to implement direct delivery where the data and trades are transmitted without any delays the the RB or the OB.
     - `max_rtt.py` extends the `DBO` class to simulate the bounds for Response Time Fairness defined in Section 4.2.1 of the paper.
-- `run_simulation.py` is used to run various simulations using the trace data `traces/direct.zip`. The output for each algorithm is stored to `traces/simulation.dat`.
+- `single_run.py` is used to run a simulation of a particular algorithm by specifying particular attributes.
+- `run_simulation.py` is used to run various simulations using the trace data `traces/direct.zip`. The output for each algorithm is stored to `traces/simulation.dat`. It extends `single_run.py` to run and save results from multiple simulation runs.
 - `traces` should contain the cloud trace and
     - `simulation.dat` contains the output from various simulation runs using `run_simulation.py`.
     - `trace_indices.py` contains the constants used for simulation.
@@ -30,26 +31,34 @@ The repository is organized as follows:
 
 To run simulations using the cloud trace, first download the trace file `direct.zip` from the release page of v1: [https://github.com/eash3010/dbo-simulation/releases/tag/v1](https://github.com/eash3010/dbo-simulation/releases/tag/v1) and place it in the `traces/` directory. For more details about the cloud trace, please refer to the next [subsection](#cloud-trace).
 
-Now:
+Now, you can simulate an algorithm using:
 
 ```
-python3 run_simulation.py
+$ python3 single_run.py --algo dbo --num_p 10 --delta 20 --batch_size 25 --trace traces/direct.zip
+Reading cloud trace file...
+Generating RTTs from trace of MP: 1
+Running DBO(20|25|0) for 10 MPs
+
+Response Time Fairness ratio: 1.000000
+LRTF fairness ratio (delta=20.000000): 1.000000
+Mean latency: 57.713950 us
+99th percentile latency: 135.694481 us
 ```
 
-This will generate the `traces/simulation.dat` file which is of the format:
+Please run `python3 single_run.py -h` to learn how to configure the various arguments. `run_simulation.py` extends the simulation to run multiple algorithms on various number of participants. Run `python3 run_simulation.py` to generate the `traces/simulation.dat` file which contains the results of all the simulations in the form of a csv. This file has already been generated and is present in the `traces/` directory, containing the results of relevant algorithms evaluated by us in the paper. The various columns of the csv `traces/simulation.dat` are:
 
 ```
 <algorithm title and parameters>,<number of participants>,<fairness ratio>,<LRTF fairness ratio>,<mean latency>,<99p latency>,<maximum latency>
 ```
 
-Example:
+where each row contains the results of an algorithm with a particular set of parameters. Example:
 
 ```
-DBO(20|25|0),10,0.9998977777777779,51.72777250220907,130.02876502950676,439.73724861914525
-MaxRTT,10,0.9987654888888892,31.127322084931084,46.65426705230493,406.3654986593174
-DBO(20|25|0),20,0.9998023684210525,54.7128038365994,215.74071731895674,452.1485372555908
-Cloudex(15|15),10,0.9951819555555554,30.181985499269878,31.61907858124118,400.4027382090717
-Cloudex(20|20),10,0.9988185999999999,40.12518497419023,40.0,400.4027382090717
+DBO(20|25|0),10,1.0,1.0,57.713949790464476,135.69448061427101,445.73724861914525
+MaxRTT,10,1.0,1.0,31.12021299373728,46.87189941399265,403.4315758519224
+DBO(20|25|0),20,1.0,1.0,60.686777310062695,221.48316430105479,450.3654986593174
+Cloudex(10|10),10,0.9779103111111109,0.9779103111111109,27.5380116367638,31.518927120083234,403.38039447917254
+Cloudex(15|15),10,0.995140088888889,0.995140088888889,30.182915867603317,31.597716406024965,403.38039447917254
 ...
 ```
 
@@ -59,7 +68,7 @@ The main metrics evaluated by us are as follows (described in more detail in the
 
 #### Fariness Ratio
 
-We define two different definitions of fairness in our paper, response time fairness and limited response time fairness. Both of these are evaluated and reported by us in the simulation framework. The figures plotted in the next [subsection](#plotting-figures-from-the-paper) show the stronger and general definition: response time fairness. Note that to evaluate the high frequency trading workloads, we evaluate on MPs with response times faster than 20&mu;s. Accordingly, the choice of delta for DBO and LRTF is also 20&mu;s.
+We define two different definitions of fairness in our paper, response time fairness and limited response time fairness. Both of these are evaluated and reported by us in the simulation framework. The figures plotted in the next [subsection](#plotting-figures-from-the-paper) plot the response time fairness ratio. Note that to evaluate the high-frequency trading (HFT) workloads, we evaluate on MPs with response times faster than 20&mu;s. Accordingly, the choice of delta for DBO and LRTF is also 20&mu;s.
 
 #### Latency
 
@@ -68,7 +77,7 @@ The latency of the system is evaluated from point of data generation to the trad
 ### Plotting figures from the paper
 
 The outputs from `traces/simulation.dat` can be used by `plot_figures.py` to generate figures in the `figures/` directory.
-```
+```bash
 python3 plot_figures.py
 ```
 
